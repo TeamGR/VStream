@@ -1,6 +1,9 @@
 clear all;
 close all;
 
+
+
+
 %% Random patches
 
 %% Parameters
@@ -107,23 +110,19 @@ fclose(registry_fid);
 %% Parameters
 
 
-%% Simple layer
-
-
-% Initialize filtered images array
-filteredImg = cell(n_scales, n_templates, n_ori);
-
-% Import, normalize and zero-center the input image
+%% Import, normalize and zero-center the input image
 inputImg = double(rgb2gray(imread('lena.jpg','jpg')));
 inputImg  = inputImg - mean(mean(inputImg));
 inputImg = inputImg ./ norm(inputImg, 1);
 inputImg = imrotate(inputImg , 30 , 'bilinear' , 'crop');
 [inSizeX inSizeY] = size(inputImg);
 
+%% Simple layer
+
+% Initialize filtered images array
+filteredImg = cell(n_scales, n_templates, n_ori);
+
 for idx_scale=1:n_scales
-    
-    % Initialization of the filtered image structure
-    filteredImg{idx_scale,1} = zeros(n_templates, n_ori, sx_scales(idx_scale), sy_scales(idx_scale));
 
     % 1) Loop on the templates
     for idx_template=1:n_templates
@@ -131,21 +130,20 @@ for idx_scale=1:n_scales
         % 2) Loop on the orientations
         for idx_dir=1:n_ori
                             
-            filteredImg{idx_scale, idx_template, idx_dir} = conv2(inputImg,squeeze(templates{idx_scale,1}(idx_template, idx_dir, :, :)),'same');
+            filteredImg{idx_scale, idx_template, idx_dir} = conv2(inputImg,squeeze(templates{idx_scale,1}(idx_template, idx_dir, :, :)),'valid');
         end
     end
 end
 
 figure;
 imshow(cell2mat(filteredImg(1,1,1)) , []);
- 
 
 %% Complex layer
 
 % Image pooling
 poolingSplitNum = 1;    % Number of splits along axes for determining pooling regions
 poolRegsNum = poolingSplitNum^2; 
-numBars = 100;   % Number of bars of the histogram
+numBars = 20;   % Number of bars of the histogram
 
 [ L1hist ] = pooling( filteredImg , n_templates , poolingSplitNum , numBars , 'histogram');
 
