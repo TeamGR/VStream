@@ -12,9 +12,9 @@ function [ out ] = pooling( filteredImg , n_templates , poolingSplitNum , numBar
 %               'moments': provides the first 3 moments of the distribution
 %               (mean, variance and max value)
 
-poolRegsNum = poolingSplitNum^2; 
+poolRegsNum = poolingSplitNum^2;
 
-[inSizeX inSizeY] = size(filteredImg);
+[inSizeX inSizeY] = size(filteredImg(1,1,1));
 
 % Side sizes of the pooling regions
 regSideLenX = floor(inSizeX/poolingSplitNum);
