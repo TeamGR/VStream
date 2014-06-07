@@ -42,18 +42,20 @@ inputImg1 = inputImg1 ./ norm(inputImg1, 1);
 signatures = [];
 
 numTraslX = 4; % Number of translations along X of the input image 
-rangeTraslX = 100; % Range of translations along X of the input image
+rangeTraslX = 50; % Range of translations along X of the input image
 numTraslY = 4; % Number of translations along Y of the input image 
-rangeTraslY = 100; % Range of translations along Y of the input image
+rangeTraslY = 50; % Range of translations along Y of the input image
 
-for i = 1:numTrasl
-    inputImg = imtranslate(I,[15, 25]);
+for ix = 0:numTraslX
+for iy = 0:numTraslY
+
+    inputImg = imtranslate(inputImg1,[ix * floor(rangeTraslX/numTraslX) - floor(rangeTraslX/2) , iy * floor(rangeTraslY/numTraslY) - floor(rangeTraslY/2) ]);
     
-    inputImg = imcrop( inputImg ,[ ceil( (1/2 - (1/(2*sqrt(2))))* inSizeXini) ceil( (1/2 - (1/(2*sqrt(2))))* inSizeYini) floor((1/sqrt(2))* inSizeXini) floor((1/sqrt(2))* inSizeYini) ]);
-    [inSizeX inSizeY] = size(inputImg);    
+     inputImg = imcrop( inputImg ,[ ceil(rangeTraslX/2) ceil(rangeTraslX/2) floor(inSizeXini - rangeTraslX) floor(inSizeYini - rangeTraslY) ]);
+     [inSizeX inSizeY] = size(inputImg);    
     
     figure(1)
-    subplot(4, 4, i);
+    subplot(numTraslX+1, numTraslY+1, ix*(numTraslX+1) + iy + 1);
     imshow(inputImg, []);
     % Simple layer
 
@@ -77,7 +79,7 @@ for i = 1:numTrasl
     signatures = [signatures ; horzcat(L1hist{:,1,1})];
     
 end
-
+end
 figure(2)
 plot(signatures');
 
