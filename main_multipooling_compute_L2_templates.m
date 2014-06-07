@@ -34,7 +34,7 @@ load('compute_templates/pascal_filters.mat');
 
 
 %% Import, normalize and zero-center the input image
-inputImg1 = double(rgb2gray(imread('lena.jpg','jpg')));
+inputImg1 = double(rgb2gray(imread('plane.jpg','jpg')));
 inputImg1  = inputImg1 - mean(mean(inputImg1));
 inputImg1 = inputImg1 ./ norm(inputImg1, 1);
 [inSizeXini inSizeYini] = size(inputImg1);
