@@ -80,7 +80,18 @@ for iy = 0:numTraslY
     
 end
 end
-figure(2)
-plot(signatures');
 
 %% Response visualization and quantitative comaprison
+
+figure(2)
+%plot(signatures');
+%boxplot(signatures);
+
+m = mean(signatures);
+sd = std(signatures);
+f = [ m+2*sd , flipdim(m-2*sd,2)]; 
+fill([1:size(signatures,2) , size(signatures,2):-1:1] , f, [7 7 7]/8)
+hold on;
+plot(1:size(signatures,2) , m , 'b' , 'LineWidth',1);
+
+max(sd)
