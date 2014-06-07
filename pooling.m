@@ -14,7 +14,7 @@ function [ out ] = pooling( filteredImg , n_templates , poolingSplitNum , numBar
 
 poolRegsNum = poolingSplitNum^2;
 
-[inSizeX inSizeY] = size(filteredImg(1,1,1));
+[inSizeX inSizeY] = size(cell2mat(filteredImg(1,1,1)));
 
 % Side sizes of the pooling regions
 regSideLenX = floor(inSizeX/poolingSplitNum);
@@ -43,7 +43,6 @@ switch policy
             end
         end
         
-        
     case 'moments'
         % Mean
         out{1} = mean2(filteredImg);
@@ -52,7 +51,6 @@ switch policy
         % Maximum
         out{3} = max(max(filteredImg));
 end
-
 
 end
 
