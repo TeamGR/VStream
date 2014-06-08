@@ -34,7 +34,7 @@ load('compute_templates/gabor_filters.mat');
 %% Parameters
 
 
-%% Import, normalize and zero-center the input image
+%% 
 
 signatures = [];
 filteredTemplatesL2 = cell(n_scales, n_templates, n_ori);
