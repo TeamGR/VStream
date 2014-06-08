@@ -14,7 +14,7 @@ function [ out ] = pooling( filteredImg , n_templates , poolingSplitNum , numBar
 
 poolRegsNum = poolingSplitNum^2;
 
-[inSizeX inSizeY] = size(cell2mat(filteredImg(1,1,1)));
+[inSizeX inSizeY] = size(cell2mat(filteredImg{1,1,1}(1,1,1)));
 
 % Side sizes of the pooling regions
 regSideLenX = floor(inSizeX/poolingSplitNum);
