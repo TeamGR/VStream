@@ -1,13 +1,11 @@
+% This script is aimed at computing the layer 2 templates
+
 clear all;
 close all;
-
-
-
 
 %% Random patches
 
 %% Parameters
-
 
 n_ori = 8;
 res_ori = 2*pi / n_ori;
@@ -18,23 +16,24 @@ taps = [11 23 47];
 
 n_transformations = n_ori * n_scales;
 
-n_templates = 10;
+n_templates = 2;
+n_templates2 = 10;
 
 n_filters = n_templates * n_transformations;
 
 %% Source images
 
-load('compute_templates/pascal_filters.mat');
+%load('compute_templates/pascal_filters.mat');
 
 %% Gabors 
 
-%load('compute_templates/gabor_filters.mat');
+load('compute_templates/gabor_filters.mat');
 
 %% Parameters
 
 
 %% Import, normalize and zero-center the input image
-inputImg1 = double(rgb2gray(imread('plane.jpg','jpg')));
+inputImg1 = double(rgb2gray(imread('1.jpg','jpg')));
 inputImg1  = inputImg1 - mean(mean(inputImg1));
 inputImg1 = inputImg1 ./ norm(inputImg1, 1);
 [inSizeXini inSizeYini] = size(inputImg1);
@@ -51,8 +50,8 @@ for iy = 0:numTraslY
 
     inputImg = imtranslate(inputImg1,[ix * floor(rangeTraslX/numTraslX) - floor(rangeTraslX/2) , iy * floor(rangeTraslY/numTraslY) - floor(rangeTraslY/2) ]);
     
-     inputImg = imcrop( inputImg ,[ ceil(rangeTraslX/2) ceil(rangeTraslX/2) floor(inSizeXini - rangeTraslX) floor(inSizeYini - rangeTraslY) ]);
-     [inSizeX inSizeY] = size(inputImg);    
+    inputImg = imcrop( inputImg ,[ ceil(rangeTraslX/2) ceil(rangeTraslX/2) floor(inSizeXini - rangeTraslX) floor(inSizeYini - rangeTraslY) ]);
+    [inSizeX inSizeY] = size(inputImg);    
     
     figure(1)
     subplot(numTraslX+1, numTraslY+1, ix*(numTraslX+1) + iy + 1);
@@ -84,9 +83,6 @@ end
 %% Response visualization and quantitative comaprison
 
 figure(2)
-%plot(signatures');
-%boxplot(signatures);
-
 m = mean(signatures);
 sd = std(signatures);
 f = [ m+2*sd , flipdim(m-2*sd,2)]; 

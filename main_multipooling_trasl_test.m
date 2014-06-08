@@ -18,23 +18,23 @@ taps = [11 23 47];
 
 n_transformations = n_ori * n_scales;
 
-n_templates = 10;
+n_templates = 2;
 
 n_filters = n_templates * n_transformations;
 
 %% Source images
 
-load('compute_templates/pascal_filters.mat');
+%load('compute_templates/pascal_filters.mat');
 
 %% Gabors 
 
-%load('compute_templates/gabor_filters.mat');
+load('compute_templates/gabor_filters.mat');
 
 %% Parameters
 
 
 %% Import, normalize and zero-center the input image
-inputImg1 = double(rgb2gray(imread('lena.jpg','jpg')));
+inputImg1 = double(rgb2gray(imread('plane.jpg','jpg')));
 inputImg1  = inputImg1 - mean(mean(inputImg1));
 inputImg1 = inputImg1 ./ norm(inputImg1, 1);
 [inSizeXini inSizeYini] = size(inputImg1);
@@ -68,7 +68,7 @@ for iy = 0:numTraslY
 
     % Image pooling
     poolingSplitNum = 1;    % Number of splits along axes for determining pooling regions
-    numBars = 20;   % Number of bars of the histogram
+    numBars = 100;   % Number of bars of the histogram
 
     L1hist = pooling( filteredImg , n_templates , poolingSplitNum , numBars , 'histogram');
 
