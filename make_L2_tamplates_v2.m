@@ -2,10 +2,11 @@ addpath((genpath('.')));
 
 %% Simple layer
 
-%% Import templates
+% Import templates
+
+% Load cooked L1 templates
 
 T = load('gabor_filters.mat');
-T2 = load('pascal_filters.mat');
 
 n_scales = length(T.templates);
 n_templates = size(T.templates{1},1);
@@ -18,54 +19,54 @@ end
 
 templates = T.templates;
 
-templatesL2_raw = T2.templates;
 
-for idx_scale=1:n_scales
-    
-    min(min(min(min(templates{idx_scale}))))
-    max(max(max(max(templates{idx_scale}))))
-       
+% Load raw L2 templates
+
+T2 = load('pascal_filters.mat');
+%templatesL2_raw = T2.templates;
+
+%----------- DEBUG
+templatesL2_raw = cell(3,1);
+for i=1:3
+    templatesL2_raw{i} = ones(1,1,100,100);
 end
+%-----------------
 
-%% Import, normalize and zero-center the input image
+% Format of templatesL2_raw:
+% n_scales_raw X 1 cell array
+%   Each cell contains:
+%   n_templates X n_ori 2D raw templates matrices
 
-image_path = fullfile('images', '1.jpg');
+n_scales_raw = length(templatesL2_raw);
+n_templates_raw = size(templatesL2_raw{1},1);
+n_ori_raw = size(templatesL2_raw{1},2);
 
-inputImg = imread(image_path,'jpg');
-if size(inputImg,3)==3
-    inputImg = double(rgb2gray(inputImg));
-end
-inputImg  = inputImg - mean2(inputImg);
-inputImg = inputImg / norm(inputImg);
+%% Filter the raw L2 templates with the L1 templates, then pool and concatenate to obtain L2 templates
 
-%% Apply transformations to the input image
+templatesL2_hist = cell(n_templates_raw , n_ori_raw , n_scales_raw);
+templatesL2_moms = cell(n_templates_raw , n_ori_raw , n_scales_raw);
 
-inputImg = imrotate(inputImg , 30 , 'bilinear' , 'crop');
-inputImg = imresize(inputImg, [100 100]);
-[inSizeY, inSizeX] = size(inputImg);
+% Outer loop on the raw templates
 
-%% Filter all the transformed images with all the transformed templates
+for idx_templates_raw = 1:n_templates_raw
+for idx_ori_raw = 1:n_ori_raw
+for idx_scales_raw = 1:n_scales_raw
 
 S1responses = cell(n_scales, 1);
+[inSizeY , inSizeX] = size(squeeze(templatesL2_raw{idx_scales_raw,1}(1,1,:,:)));
 
-% 1) Loop on the scales
-for idx_scale=1:n_scales
-    
-    S1responses{idx_scale,1} = zeros(n_templates, n_ori, inSizeY-(taps(idx_scale)-1), inSizeX-(taps(idx_scale)-1));
+% Inner loops
+for idx_scale=1:n_scales            % Scales
+S1responses{idx_scale,1} = zeros(n_templates, n_ori, inSizeY - (taps(idx_scale)-1) , inSizeX - (taps(idx_scale)-1));
 
-    for idx_template=1:n_templates
-        for idx_ori=1:n_ori                     
-            S1responses{idx_scale}(idx_template, idx_ori, :, :) = conv2(inputImg,squeeze(templates{idx_scale,1}(idx_template, idx_ori, :, :)),'valid');
+    for idx_template=1:n_templates      % Templates
+        for idx_ori=1:n_ori                 % Orientations                     
+            S1responses{idx_scale,1}(idx_template, idx_ori, :, :) = conv2(squeeze(templatesL2_raw{idx_scales_raw , 1}( idx_templates_raw , idx_ori_raw , : , : )) , squeeze(templates{idx_scale,1}(idx_template, idx_ori, :, :)),'valid');
         end
     end
-    
-    % should be already normalized if filter and image are: (v-mean(v))/norm(v-mean(v)) * (u-mean(u))/norm(u-mean(u))
-    %min(min(min(min(S1responses{idx_scale}))))
-    %max(max(max(max(S1responses{idx_scale}))))
-    
 end
 
-%% Complex layer - Pooling
+% Complex layer - Pooling
 
 n_splits = 10;
 
@@ -74,22 +75,18 @@ range = [-1 1];
 
 C1responses_hist = pooling_giulia(S1responses, n_splits, n_bins, range,  'histogram'); % out_hist = zeros(n_bins, n_reg, n_templates, 2)
 C1responses_moms = pooling_giulia(S1responses, n_splits, n_bins, range,  'moments'); % out_moms = zeros(2, n_reg, n_templates)
-
+    
 % Concatenate histograms to obtain a 1-D array of size n_bins*n_reg*n_templates
-C1responses_hist_signature = C1responses_hist(:, :, :, 1);
-C1responses_hist_signature = C1responses_hist_signature(:);
-C1responses_hist_xdomain = C1responses_hist(:, :, :, 2);
-C1responses_hist_xdomain = C1responses_hist_xdomain(:);
+templatesL2_hist{idx_templates_raw , idx_ori_raw , idx_scales_raw} = C1responses_hist(:, :, :, 1);
+templatesL2_hist{idx_templates_raw , idx_ori_raw , idx_scales_raw} = templatesL2_hist{idx_templates_raw , idx_ori_raw , idx_scales_raw}(:);
+% C1responses_hist_xdomain = C1responses_hist(:, :, :, 2);
+% C1responses_hist_xdomain = C1responses_hist_xdomain(:);
 
 % Concatenate moments to obtain a 1-D array of size 3*n_reg*n_templates
-C1responses_moms_signature = C1responses_moms(:);
+templatesL2_moms{idx_templates_raw , idx_ori_raw , idx_scales_raw} = C1responses_moms(:);
+    
+    
+end
+end
+end
 
-% Plot the histogram signature
-figure
-plot(C1responses_hist_signature);
-title('C1 signature histogram')
-
-% Plot the moments signature
-figure
-plot(C1responses_moms_signature);
-title('C1 signature 3 moments')
