@@ -4,8 +4,8 @@ addpath((genpath('.')));
 
 %% Import templates
 
-%T = load('gabor_filters.mat');
-T = load('pascal_filters.mat');
+T = load('gabor_filters.mat');
+%T = load('pascal_filters.mat');
 
 n_scales = length(T.templates);
 n_templates = size(T.templates{1},1);
@@ -39,6 +39,7 @@ inputImg = inputImg / norm(inputImg);
 %% Apply transformations to the input image
 
 inputImg = imrotate(inputImg , 30 , 'bilinear' , 'crop');
+inputImg = imresize(inputImg, [100 100]);
 [inSizeY, inSizeX] = size(inputImg);
 
 %% Filter all the transformed images with all the transformed templates
@@ -64,42 +65,29 @@ end
 
 %% Complex layer - Pooling
 
-n_splits = 4;
+n_splits = 10;
 
 n_bins = 10;
 range = [-1 1];
 
-C1responses = pooling_giulia(S1responses, n_splits, n_bins, range,  'histogram');
+C1responses_hist = pooling_giulia(S1responses, n_splits, n_bins, range,  'histogram'); % out_hist = zeros(n_bins, n_reg, n_templates, 2)
+C1responses_moms = pooling_giulia(S1responses, n_splits, n_bins, range,  'moments'); % out_moms = zeros(2, n_reg, n_templates)
 
-% 
-% % Side sizes of the pooling regions
-% regSideLenX = floor(inSizeX/poolingSplitNum);
-% regSideLenY = floor(inSizeY/poolingSplitNum);
-% regArea = regSideLenX * regSideLenY;
-% 
-% ma = max(max(cell2mat(filteredImg(1,1,1))));
-% mi = min(min(cell2mat(filteredImg(1,1,1))));
-% 
-% step = (ma-mi)/numBars;
-% x_hist = mi:step:ma;
-% L1hist = cell(n_templates, poolRegsNum, 2);
-% 
-% % Templates loop
-% for j = 1:n_templates
-%     
-%     % Reshape filtered image in column array form
-%     reshFiltI = reshape(cell2mat(filteredImg(1,j,:)),numel(cell2mat(filteredImg(1,j,:))),1);
-% 
-%     % Pooling regions loop
-%     for k = 1:poolRegsNum
-%         [L1hist{j,k,1} L1hist{j,k,2}] = hist(reshFiltI((k-1)*regArea + 1 : k*regArea), x_hist);
-%     end
-% end
-% Plot a histogram relative to a single template
+% Concatenate histograms to obtain a 1-D array of size n_bins*n_reg*n_templates
+C1responses_hist_signature = C1responses_hist(:, :, :, 1);
+C1responses_hist_signature = C1responses_hist_signature(:);
+C1responses_hist_xdomain = C1responses_hist(:, :, :, 2);
+C1responses_hist_xdomain = C1responses_hist_xdomain(:);
 
-bar(C1responses{8,1,2},C1responses{8,1,1});
+% Concatenate moments to obtain a 1-D array of size 3*n_reg*n_templates
+C1responses_moms_signature = C1responses_moms(:);
 
-% Generate pooling area 1 signature by concatenating histograms generated
-% by the filtering with all templates
-signature = horzcat(C1responses{:,1,1});
-plot(signature);
+% Plot the histogram signature
+figure
+plot(C1responses_hist_signature);
+title('C1 signature histogram')
+
+% Plot the moments signature
+figure
+plot(C1responses_moms_signature);
+title('C1 signature 3 moments')
