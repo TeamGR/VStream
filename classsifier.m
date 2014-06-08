@@ -1,12 +1,13 @@
 % Simple classifier for 1-L signatures, n --> 1
 % Author: Raffaello Camoriano
 
-load translated_car.mat
+load signature_gabor_car.mat
 sig_car = signatures;
 clear signatures;
 
-load translated_plane.mat
-sig_pln = signatures_plane;
+load signature_gabor_plane.mat
+sig_pln = signatures;
+clear signatures;
 
 X = [ sig_car ; sig_pln ];
 Y = [ ones(size(sig_car,1),1) ; -ones(size(sig_pln,1),1) ];
