@@ -1,5 +1,6 @@
 function responses = convolve_giulia(image, templates)
 
+[inSizeY, inSizeX] = size(image);
 n_scales = length(templates);
 n_templates = size(templates{1},1);
 n_ori = size(templates{1},2);
