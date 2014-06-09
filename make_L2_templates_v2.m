@@ -1,4 +1,6 @@
 addpath((genpath('.')));
+clear all;
+close all;
 
 %% Simple layer
 
@@ -22,14 +24,14 @@ templates = T.templates;
 
 % Load raw L2 templates
 
-T2 = load('pascal_templates_L2.mat');
-%templatesL2_raw = T2.templates;
+load('pascal_templates_L2.mat');
+%templatesL2_raw = templates;
 
 %----------- DEBUG
-templatesL2_raw = cell(3,1);
-for i=1:3
-    templatesL2_raw{i} = ones(1,1,100,100);
-end
+% templatesL2_raw = cell(3,1);
+% for i=1:3
+%     templatesL2_raw{i} = ones(1,1,100,100);
+% end
 %-----------------
 
 % Format of templatesL2_raw:
@@ -68,9 +70,8 @@ end
 
 % Complex layer - Pooling
 
-n_splits = 10;
-
-n_bins = 10;
+n_splits = 3;
+n_bins = 20;
 range = [-1 1];
 
 C1responses_hist = pooling_giulia(S1responses, n_splits, n_bins, range,  'histogram'); % out_hist = zeros(n_bins, n_reg, n_templates, 2)
@@ -89,4 +90,4 @@ end
 end
 end
 
-save ('templatesL2.mat', templatesL2_hist,templatesL2_moms);
+save ('templatesL2.mat', 'templatesL2_hist' , 'templatesL2_moms');
