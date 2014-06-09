@@ -1,4 +1,4 @@
-function out = pooling_giulia(responses, n_splits, n_bins, range, policy)
+function out = poolingL1_giulia(responses, n_splits, n_bins, range, policy)
 
 %   responses: reponses from previous layer of type cell(n_scales,1) 
 %               with each elem of format zeros(n_templates*n_ori*sizeY*sizeX)
@@ -85,6 +85,9 @@ switch policy
         for idx_template=1:n_templates
             for idx_reg = 1:n_reg
                 [out_hist(:, idx_reg, idx_template, 1), out_hist(:, idx_reg, idx_template, 2)] = hist(domain_hist{idx_template, idx_reg}, x_hist);
+                mean_hist = mean(out_hist(:, idx_reg, idx_template, 1));
+                norm_hist = norm(out_hist(:, idx_reg, idx_template, 1) - mean_hist);
+                out_hist(:, idx_reg, idx_template, 1) = (out_hist(:, idx_reg, idx_template, 1) - mean_hist) / norm_hist;
             end
         end
         

@@ -1,3 +1,5 @@
+addpath(genpath('.'));
+
 %% Load images and infer parameters
 
 load_prefixname = 'pascal';
@@ -5,11 +7,11 @@ load_prefixname = 'pascal';
 input = load([load_prefixname '_images.mat'], 'images');
 images = input.images;
 input = load([load_prefixname '_translated_images.mat'], 'translated_images');
-translated_images = input.images;
+translated_images = input.translated_images;
 input = load([load_prefixname '_rotated_images.mat'], 'rotated_images');
-rotated_images = input.images;
+rotated_images = input.rotated_images;
 input = load([load_prefixname '_scaled_images.mat'], 'scaled_images');
-scaled_images = input.images;
+scaled_images = input.scaled_images;
 
 n_images = length(images);
 n_xtranslations = size(translated_images, 2);
@@ -35,7 +37,8 @@ templatesL2_moms = T.templatesL2_moms;
 
 % set parameters for histogram computation at C1 layer
 n_splits = 10; % the image is divided in a grid of n_splits x n_splits regions
-n_bins = 10; % bars of the histogram
+n_binsL1 = 10; % bars of the histograms at L1
+n_binsL2 = 10; % bars of the histogram at L1
 range = [-1 1]; % range of the histogram
 
 % init data structures
@@ -58,69 +61,71 @@ C2scale = cell{n_images, n_scales};
 
 %% S1 responses 
 
+% output of dotproductL1_giulia is of format
+% cell(n_scales, 1)
+% responses{idx_scale} = zeros(n_templates, n_ori, sizeY-(taps(idx_scale)-1), sizeX-(taps(idx_scale)-1))
+
 for idx_image=1:n_images
-    S1{idx_image} = convolve_giulia(images{idx_image}, gabors);
+    S1{idx_image} = dotproductL1_giulia(images{idx_image}, gabors, n_splits);
 end
 
 for ix_transl=1:n_xtranslations
     for iy_transl=1:n_ytranslations
-        S1transl{idx_image, ix_transl, iy_transl} = convolve_giulia(translated_images{idx_image, ix_transl, iy_transl}, gabors);
+        S1transl{idx_image, ix_transl, iy_transl} = dotproductL1_giulia(translated_images{idx_image, ix_transl, iy_transl}, gabors, n_splits);
     end
 end
 
 for idx_rot=1:n_rotations
-    S1rot{idx_image, idx_rot} = convolve_giulia(rotated_images{idx_image, idx_rot}, gabors);
+    S1rot{idx_image, idx_rot} = dotproductL1_giulia(rotated_images{idx_image, idx_rot}, gabors, n_splits);
 end
 
 for idx_scale=1:n_scales
-    S1scale{idx_image, idx_scale} = convolve_giulia(scaled_images{idx_image, idx_scale}, gabors);
+    S1scale{idx_image, idx_scale} = dotproductL1_giulia(scaled_images{idx_image, idx_scale}, gabors, n_splits);
 end
 
 %% C1 responses
  
+% output of poolingL1_giulia is of format
+% zeros(n_binsL1, n_reg, n_templatesL1, 2)
+
 for idx_image=1:n_images
-   histograms = poolingL1_giulia(S1{idx_image}, n_splits, n_bins, range,  'histogram');
+   histograms = poolingL1_giulia(S1{idx_image}, n_splits, n_binsL1, range,  'histogram');
    signature = histograms(:, :, :, 1);
    signature = signature(:);
-   normalized_signature = signature - mean(signature);
-   normalized_signature = normalized_signature / norm(normalized_signature);
-   C1{idx_image} = normalized_signature;
+   C1{idx_image} = signature;
 end
 
 for ix_transl=1:n_xtranslations
     for iy_transl=1:n_ytranslations
-        histograms = poolingL1_giulia(S1transl{idx_image, ix_transl, iy_transl}, n_splits, n_bins, range,  'histogram');
+        histograms = poolingL1_giulia(S1transl{idx_image, ix_transl, iy_transl}, n_splits, n_binsL1, range,  'histogram');
         signature = histograms(:, :, :, 1);
-        signature = signature(:);
-        normalized_signature = signature - mean(signature);
-        normalized_signature = normalized_signature / norm(normalized_signature);
-        C1transl{idx_image, ix_transl, iy_transl} = normalized_signature;
+        signature = signature(:); 
+        C1transl{idx_image, ix_transl, iy_transl} = signature;
     end
 end
 
 for idx_rot=1:n_rotations
-    histograms = poolingL1_giulia(S1rot{idx_image, idx_rot}, n_splits, n_bins, range,  'histogram');
+    histograms = poolingL1_giulia(S1rot{idx_image, idx_rot}, n_splits, n_binsL1, range,  'histogram');
     signature = histograms(:, :, :, 1);
-    normalized_signature = signature - mean(signature);
-    normalized_signature = normalized_signature / norm(normalized_signature);
-    C1rot{idx_image, idx_rot} = normalized_signature;
+    signature = signature(:); 
+    C1rot{idx_image, idx_rot} = signature;
 end
 
 for idx_scale=1:n_scales
-    histograms = poolingL1_giulia(S1scale{idx_image, idx_scale}, n_splits, n_bins, range,  'histogram');
+    histograms = poolingL1_giulia(S1scale{idx_image, idx_scale}, n_splits, n_binsL1, range,  'histogram');
     signature = histograms(:, :, :, 1);
-    normalized_signature = signature - mean(signature);
-    normalized_signature = normalized_signature / norm(normalized_signature);
-    C1scale{idx_image, idx_scale} = normalized_signature;
+    signature = signature(:); 
+    C1scale{idx_image, idx_scale} = signature;
 end
 
 %% S2 responses 
 
-% output of dot_product_giulia is of format
-% zeros(signature_length, n_ori, n_scales, n_templates);
+% output of dotproductL2_giulia is of format
+% zeros(signature_length, n_oriL2, n_scalesL2, n_templatesL2)
+% signature_length = n_bins * n_reg * n_templatesL1
 
 for idx_image=1:n_images
-   S2{idx_image} = dotproduct_giulia(C1{idx_image}, templatesL2_hist);
+   S2{idx_image} = dotproductL2_giulia(C1{idx_image}, templatesL2_hist);
 end
 
 for ix_transl=1:n_xtranslations
@@ -139,20 +144,35 @@ end
 
 %% C2 responses
 
+% output of poolingL2_giulia is of format
+% zeros(n_bins, n_templatesL2, 2)
+
 for idx_image=1:n_images
-   C2{idx_image} = poolingL2_giulia(S2{idx_image}, n_splits, n_bins, range,  'histogram');
+    histograms = poolingL2_giulia(S2{idx_image}, n_binsL2, range,  'histogram');
+    signature = histograms(:, :, :, 1);
+    signature = signature(:); 
+    C2{idx_image} = signature;
 end
 
 for ix_transl=1:n_xtranslations
     for iy_transl=1:n_ytranslations
-        C2transl{idx_image, ix_transl, iy_transl} = poolingL2_giulia(S2transl{idx_image, ix_transl, iy_transl}, n_splits, n_bins, range,  'histogram');
+        histograms = poolingL2_giulia(S2transl{idx_image, ix_transl, iy_transl}, n_binsL2, range,  'histogram');
+        signature = histograms(:, :, :, 1);
+        signature = signature(:); 
+        C2transl{idx_image, ix_transl, iy_transl} = signature;
     end
 end
 
 for idx_rot=1:n_rotations
-    C2rot{idx_image, idx_rot} = poolingL2_giulia(S2rot{idx_image, idx_rot}, n_splits, n_bins, range,  'histogram');
+    histograms = poolingL2_giulia(S2rot{idx_image, idx_rot}, n_binsL2, range,  'histogram');
+    signature = histograms(:, :, :, 1);
+    signature = signature(:); 
+    C2rot{idx_image, idx_rot}= signature;
 end
 
 for idx_scale=1:n_scales
-    C2scale{idx_image, idx_scale} = poolingL2_giulia(S2scale{idx_image, idx_scale}, n_splits, n_bins, range,  'histogram');
+    histograms = poolingL2_giulia(S2scale{idx_image, idx_scale}, n_binsL2, range,  'histogram');
+    signature = histograms(:, :, :, 1);
+    signature = signature(:); 
+    C2scale{idx_image, idx_scale} = signature;
 end

@@ -49,9 +49,9 @@ end
 
 % init data structures for images and responses
 images = cell(n_images, 1);
-translated_images = cell(n_xtranslations, n_ytranslations);
+translated_images = cell(n_images, n_xtranslations, n_ytranslations);
 rotated_images = cell(n_images, n_rotations);
-scaled_images = cell(idx_images, n_scales);
+scaled_images = cell(n_images, n_scales);
 
 for idx_image=1:n_images
     
@@ -69,29 +69,19 @@ for idx_image=1:n_images
     for ix_transl = 1:n_xtranslations
         for iy_transl = 1:n_ytranslations
             translated_images{idx_image, ix_transl, iy_transl} = imtranslate(images{idx_image},[xtranslations(ix_transl) ytranslations(iy_transl)], 'OutputView', 'same', 'FillValues', mean2(images{idx_image}));
-            translated_images{idx_image, ix_transl, iy_transl} = translated_images{idx_image, ix_transl, iy_transl} - mean2(translated_images{idx_image, ix_transl, iy_transl});
-            translated_images{idx_image, ix_transl, iy_transl} = translated_images{idx_image, ix_transl, iy_transl} / norm(translated_images{idx_image, ix_transl, iy_transl});
         end
     end
     
     % apply rotations
     for idx_rot=1:n_rotations
         rotated_images{idx_image, idx_rot} = imrotate(images{idx_image}, rotations(idx_rot)*180/pi, 'bilinear' , 'crop');
-        rotated_images{idx_image, idx_rot} = rotated_images{idx_image, idx_rot} - mean2(rotated_images{idx_image, idx_rot});
-        rotated_images{idx_image, idx_rot} = rotated_images{idx_image, idx_rot} / norm(rotated_images{idx_image, idx_rot});
     end
     
     % apply scales
     for idx_scale=1:n_scales
         scaled_images{idx_image, idx_scale} = imresize(images{idx_image}, size(images{idx_image})*scales(idx_scale));
-        scaled_images{idx_image, idx_scale} = scaled_images{idx_image, idx_scale} - mean2(scaled_images{idx_image, idx_scale});
-        scaled_images{idx_image, idx_scale} = scaled_images{idx_image, idx_scale} / norm(scaled_images{idx_image, idx_scale});
     end
-    
-    % AT THE END normalize original image
-    images{idx_image} = images{idx_image} - mean2(images{idx_image});
-    images{idx_image} = images{idx_image} / norm(images{idx_image});
-    
+   
 end
 
 save([save_prefixname '_images.mat'], 'images');

@@ -19,7 +19,7 @@ n_filters = n_templates * n_transformations;
 
 % source images
 
-registry_path = fullfile(pwd, 'compute_templates', 'pascal_registry.txt');
+registry_path = fullfile(pwd, 'pascal_registry.txt');
 ext = '.jpg';
 images_path = 'D:\IIT\CODICI\pipeline_overfeat\PASCAL2007\VOCdevkit\VOC2007\JPEGImages';
 
@@ -82,8 +82,7 @@ for idx_template=1:n_templates
         for idx_scale=1:n_scales
             
             rotated_scaled_template = imresize(rotated_template,[taps(idx_scale) taps(idx_scale)]);
-            rotated_scaled_template = double(rotated_scaled_template);
-            templates{idx_scale,1}(idx_template, idx_ori, :, :) = (rotated_scaled_template-mean2(rotated_scaled_template))/norm(rotated_scaled_template-mean2(rotated_scaled_template));  
+            templates{idx_scale,1}(idx_template, idx_ori, :, :) = double(rotated_scaled_template);
             subplot(n_scales, n_ori, (idx_scale-1)*n_ori+idx_ori)
             imagesc(squeeze(templates{idx_scale,1}(idx_template, idx_ori, :, :)));
             colormap(gray);
@@ -130,8 +129,8 @@ for idx_scale=1:n_scales
     figure
     for idx_ori=1:n_ori
             
-        templates{idx_scale,1}(1, idx_ori, :, :) = (E(:,:,idx_ori)-mean2(E(:,:,idx_ori)))/norm(O(:,:,idx_ori)-mean2(O(:,:,idx_ori)));
-        templates{idx_scale,1}(2, idx_ori, :, :) = (O(:,:,idx_ori)-mean2(O(:,:,idx_ori)))/norm(O(:,:,idx_ori)-mean2(O(:,:,idx_ori)));
+        templates{idx_scale,1}(1, idx_ori, :, :) = E(:,:,idx_ori);
+        templates{idx_scale,1}(2, idx_ori, :, :) = O(:,:,idx_ori);
         
         subplot(2, n_ori, idx_ori);
         imagesc(squeeze(templates{idx_scale,1}(1, idx_ori, :, :)));

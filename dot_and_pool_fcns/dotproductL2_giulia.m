@@ -1,6 +1,6 @@
-function out = dotproduct_giulia(response, templates)
+function out = dotproductL2_giulia(response, templates)
 
-signature_length = length(response); % should be n_bins*n_reg*n_templates
+signature_length = length(response); % should be n_bins*n_reg*n_templatesL1
 
 n_templates = size(templates,1);
 n_ori = size(templates,2);

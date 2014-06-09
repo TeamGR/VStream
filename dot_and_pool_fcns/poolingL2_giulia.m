@@ -1,11 +1,14 @@
-function out = poolingL2_giulia(responses, n_splits, n_bins, range, policy)
+function out = poolingL2_giulia(responses, n_bins, range, policy)
+
+% input is of format
+% zeros(signature_length, n_oriL2, n_scalesL2, n_templatesL2)
+% signature_length = n_bins * n_reg * n_templatesL1
 
 signature_length = size(responses,1);
 n_ori = size(responses,2);
 n_scales = size(responses,3);
 n_templates = size(responses,4);
 
-% Compute the histogram or the moments
 switch policy
     case 'histogram'
         
@@ -18,6 +21,10 @@ switch policy
         for idx_template=1:n_templates 
             domain_hist = responses(:, :, :, idx_template);
             [out_hist(:, idx_template, 1), out_hist(:, idx_template, 2)] = hist(domain_hist(:), x_hist);
+            
+            mean_hist = mean(out_hist(:, idx_template, 1));
+            norm_hist = norm(out_hist(:, idx_template, 1) - mean_hist);
+            out_hist(:, idx_template, 1) = (out_hist(:, idx_template, 1) - mean_hist) / norm_hist;
         end
         
         out = out_hist;
