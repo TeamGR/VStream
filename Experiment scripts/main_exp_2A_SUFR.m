@@ -16,7 +16,7 @@ clear all;
 % Rotated images
 n_rotations = 7;
 Seq = cell(n_rotations);
-imgPath = 'SUFRData\image_files\uniform_bg\roll';
+imgPath = 'project\SUFRData\image_files\uniform_bg\roll';
 imgType = '*.jpg'; % change based on image type
 images  = dir([imgPath '\' imgType]);
 for idx = 1:n_rotations
@@ -27,7 +27,7 @@ rotated_images = Seq;
 % Translated Images
 n_translations = 5;
 Seq = cell(n_translations);
-imgPath = 'SUFRData\image_files\uniform_bg\translation';
+imgPath = 'project\SUFRData\image_files\uniform_bg\translation';
 imgType = '*.jpg'; % change based on image type
 images  = dir([imgPath '\' imgType]);
 for idx = 1:n_translations
@@ -38,7 +38,7 @@ translated_images = Seq;
 % Scaled images
 n_scales = 5;
 Seq = cell(n_scales);
-imgPath = 'SUFRData\image_files\uniform_bg\scaling';
+imgPath = 'project\SUFRData\image_files\uniform_bg\scaling';
 imgType = '*.jpg'; % change based on image type
 images  = dir([imgPath '\' imgType]);
 for idx = 1:n_scales
