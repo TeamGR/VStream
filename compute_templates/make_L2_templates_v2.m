@@ -46,17 +46,12 @@ templatesL2_moms = cell(n_templates_raw , n_ori_raw , n_scales_raw);
 
 % Outer loop on the raw templates
 
-for idx_templates_raw = 1:n_templates_raw
-for idx_ori_raw = 1:n_ori_raw
-for idx_scales_raw = 1:n_scales_raw
 
-S1responses = cell(n_scales, 1);
-[inSizeY , inSizeX] = size(squeeze(templatesL2_raw{idx_scales_raw,1}(1,1,:,:)));
 
 % Inner loops
 S1responses = cell(n_templates, n_ori, n_scales);
 for idx_scales_raw=1:n_scales_raw            % Scales
-%S1responses{idx_scale,1} = zeros(n_templates, n_ori, inSizeY - (taps(idx_scale)-1) , inSizeX - (taps(idx_scale)-1));
+%[inSizeY , inSizeX] = size(squeeze(templatesL2_raw{idx_scales_raw,1}(1,1,:,:)));
     for idx_templates_raw=1:n_templates_raw      % Templates
         for idx_ori_raw=1:n_ori_raw                 % Orientations           
             S1responses{idx_templates_raw , idx_ori_raw , idx_scales_raw} =...
@@ -64,6 +59,10 @@ for idx_scales_raw=1:n_scales_raw            % Scales
             ( idx_templates_raw , idx_ori_raw , : , : )) , gabors , n_splits);
         end
     end
+
+    idx_templates_raw
+    idx_ori_raw
+    idx_scales_raw
 end
 
 % Complex layer - Pooling
@@ -82,15 +81,11 @@ for idx_scales_raw=1:n_scales_raw            % Scales
             C1responses_hist{idx_templates_raw, idx_ori_raw, idx_scales_raw} = signature;
         end
     end
-end
-    
 
-idx_templates_raw
-idx_ori_raw
-idx_scales_raw
-    
+    idx_templates_raw
+    idx_ori_raw
+    idx_scales_raw
 end
-end
-end
+
 
 save ('templatesL2.mat', 'templatesL2_hist' , 'n_splits' , 'n_bins' );
