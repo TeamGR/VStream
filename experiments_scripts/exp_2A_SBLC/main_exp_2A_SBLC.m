@@ -51,8 +51,9 @@ templatesL2_hist = T.templatesL2_hist;
 n_splits = T.n_splits; % the image is divided in a grid of n_splits x n_splits regions
 
 %%%% NOTE: the # of bins should be made customizable between layers!
-n_binsL1 = T.n_bins;; % bars of the histograms at L1
-n_binsL2 = T.n_bins;; % bars of the histogram at L2
+n_binsL1 = T.n_bins; % bars of the histograms at L1
+n_binsL2 = T.n_bins; % bars of the histogram at L2
+n_bins = T.n_bins; % bars of the histograms at L1
 
 range = [-1 1]; % range of the histogram
 
@@ -145,16 +146,16 @@ end
 
 for ix_transl=1:n_xtranslations
     for iy_transl=1:n_ytranslations
-        S2transl{idx_image, ix_transl, iy_transl} = dotproduct_giulia(C1transl{idx_image, ix_transl, iy_transl}, templatesL2_hist);
+        S2transl{idx_image, ix_transl, iy_transl} = dotproductL2_giulia(C1transl{idx_image, ix_transl, iy_transl}, templatesL2_hist);
     end
 end
 
 for idx_rot=1:n_rotations
-    S2rot{idx_image, idx_rot} = dotproduct_giulia(C1rot{idx_image, idx_rot}, templatesL2_hist);
+    S2rot{idx_image, idx_rot} = dotproductL2_giulia(C1rot{idx_image, idx_rot}, templatesL2_hist);
 end
 
 for idx_scale=1:n_scales
-    S2scale{idx_image, idx_scale} = dotproduct_giulia(C1scale{idx_image, idx_scale}, templatesL2_hist);
+    S2scale{idx_image, idx_scale} = dotproductL2_giulia(C1scale{idx_image, idx_scale}, templatesL2_hist);
 end
 
 %% C2 responses

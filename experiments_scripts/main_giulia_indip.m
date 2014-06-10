@@ -130,16 +130,16 @@ end
 
 for ix_transl=1:n_xtranslations
     for iy_transl=1:n_ytranslations
-        S2transl{idx_image, ix_transl, iy_transl} = dotproduct_giulia(C1transl{idx_image, ix_transl, iy_transl}, templatesL2_hist);
+        S2transl{idx_image, ix_transl, iy_transl} = dotproductL2_giulia(C1transl{idx_image, ix_transl, iy_transl}, templatesL2_hist);
     end
 end
 
 for idx_rot=1:n_rotations
-    S2rot{idx_image, idx_rot} = dotproduct_giulia(C1rot{idx_image, idx_rot}, templatesL2_hist);
+    S2rot{idx_image, idx_rot} = dotproductL2_giulia(C1rot{idx_image, idx_rot}, templatesL2_hist);
 end
 
 for idx_scale=1:n_scales
-    S2scale{idx_image, idx_scale} = dotproduct_giulia(C1scale{idx_image, idx_scale}, templatesL2_hist);
+    S2scale{idx_image, idx_scale} = dotproductL2_giulia(C1scale{idx_image, idx_scale}, templatesL2_hist);
 end
 
 %% C2 responses
