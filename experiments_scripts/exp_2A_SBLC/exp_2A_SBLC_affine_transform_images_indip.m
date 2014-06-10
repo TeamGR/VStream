@@ -1,4 +1,6 @@
 addpath((genpath('.')));
+clear all;
+close all;
 
 %% Set transformations for input images
 
@@ -18,7 +20,7 @@ n_scales = length(scales);
 %% Set registry file with image paths
 
 % set registry path
-registry_path = fullfile(pwd, 'pascal_registry_train.txt');
+registry_path = fullfile(pwd, 'project2/experiments_scripts/exp_2A_SBLC_registry.txt');
 registry_fid = fopen(registry_path,'r');
 if (registry_fid==-1)
     error('Error! Please provide a valid path for registry file.');
@@ -26,11 +28,11 @@ end
 
 % set extension, images folder and number of different images
 ext = 'jpg';
-images_path = 'D:\IIT\CODICI\pipeline_overfeat\PASCAL2007\VOCdevkit\VOC2007\JPEGImages';
-n_images = 5;
+images_path = 'project\SBLC\images';
+n_images = 2;
 
 % set prefix name for saving transformed images
-save_prefixname = 'pascal';
+save_prefixname = 'exp_2A_SBLC';
 
 % count lines in registry file and check if there are enough image paths
 if isunix
@@ -68,7 +70,12 @@ for idx_image=1:n_images
     % apply translations
     for ix_transl = 1:n_xtranslations
         for iy_transl = 1:n_ytranslations
-            translated_images{idx_image, ix_transl, iy_transl} = imtranslate(images{idx_image},[xtranslations(ix_transl) ytranslations(iy_transl)], 'OutputView', 'same', 'FillValues', mean2(images{idx_image}));
+            
+            % ONLY matlab2014
+            % translated_images{idx_image, ix_transl, iy_transl} = imtranslate(images{idx_image},[xtranslations(ix_transl) ytranslations(iy_transl)], 'OutputView', 'same', 'FillValues', mean2(images{idx_image}));
+            
+            % BOTH matlab2012 and 2014
+            translated_images{idx_image, ix_transl, iy_transl} = imtranslate(images{idx_image}, [xtranslations(ix_transl) ytranslations(iy_transl)], mean2(images{idx_image}), 'linear', 1)
         end
     end
     
@@ -81,10 +88,9 @@ for idx_image=1:n_images
     for idx_scale=1:n_scales
         scaled_images{idx_image, idx_scale} = imresize(images{idx_image}, size(images{idx_image})*scales(idx_scale));
     end
-   
 end
 
-save([save_prefixname '_images.mat'], 'images');
-save([save_prefixname '_translated_images.mat'], 'translated_images');
-save([save_prefixname '_rotated_images.mat'], 'rotated_images');
-save([save_prefixname '_scaled_images.mat'], 'scaled_images');
+save(['project2/experiments_scripts/' save_prefixname '_images.mat'], 'images');
+save(['project2/experiments_scripts/' save_prefixname '_translated_images.mat'], 'translated_images');
+save(['project2/experiments_scripts/' save_prefixname '_rotated_images.mat'], 'rotated_images');
+save(['project2/experiments_scripts/' save_prefixname '_scaled_images.mat'], 'scaled_images');

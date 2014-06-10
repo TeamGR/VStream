@@ -1,8 +1,20 @@
-addpath(genpath('.'));
+%% Experiment description
+%
+% Number of layers of the net: 2
+% Employed dataset: SBLC
+%
+% Transformations:
+%   Independent scaling, translation and rotation of faces on a uniform
+%   background
+%
+% Binary classification, 1.jpg (car) vs 4673.jpg (plane)
+
+close all;
+clear all;
 
 %% Load images and infer parameters
 
-load_prefixname = 'pascal';
+load_prefixname = 'exp_2A_SBLC';
 
 input = load([load_prefixname '_images.mat'], 'images');
 images = input.images;
@@ -31,17 +43,20 @@ gabors = T.templates;
 T = load('templatesL2.mat');
 
 templatesL2_hist = T.templatesL2_hist;
-templatesL2_moms = T.templatesL2_moms;
+%templatesL2_moms = T.templatesL2_moms;
 
 %% Init data structure for responses
 
-% set parameters for histogram computation at C1 layer
-n_splits = 10; % the image is divided in a grid of n_splits x n_splits regions
-n_binsL1 = 10; % bars of the histograms at L1
-n_binsL2 = 10; % bars of the histogram at L1
+% set parameters for histogram computation at C1 & C2 layers
+n_splits = T.n_splits; % the image is divided in a grid of n_splits x n_splits regions
+
+%%%% NOTE: the # of bins should be made customizable between layers!
+n_binsL1 = T.n_bins;; % bars of the histograms at L1
+n_binsL2 = T.n_bins;; % bars of the histogram at L2
+
 range = [-1 1]; % range of the histogram
 
-% init data structures
+% init data structures which will contain the output signatures
 S1 = cell(n_images, 1);
 C1 = cell(n_images, 1);
 S2 = cell(n_images, 1);
@@ -176,3 +191,14 @@ for idx_scale=1:n_scales
     signature = signature(:); 
     C2scale{idx_image, idx_scale} = signature;
 end
+
+%% Response visualization and quantitative comaprison
+
+figure(2)
+m = mean(C2tot);
+sd = std(C2tot);
+f = [ m+2*sd , flipdim(m-2*sd,2)]; 
+fill([1:size(C2tot,2) , size(C2tot,2):-1:1] , f, [7 7 7]/8)
+hold on;
+plot(1:size(C2tot,2) , m , 'b' , 'LineWidth',1);
+max(sd)

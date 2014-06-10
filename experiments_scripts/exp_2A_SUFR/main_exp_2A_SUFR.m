@@ -150,7 +150,7 @@ end
 %% Output signatures concatenation
 
 %C2tot = zeros(n_translations+n_rotations+n_scales , n_bins * n_templates * n_reg);
-
+C2tot = [];
 for ix_transl=1:n_translations
     C2transl{idx_transl} = C2transl{idx_transl}(:, :, 1);
     C2transl{idx_transl} = C2transl{idx_transl}(:);
