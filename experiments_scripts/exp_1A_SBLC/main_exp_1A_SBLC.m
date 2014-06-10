@@ -245,7 +245,7 @@ mDist1 = 0;
 for i = 1:size(C2tot{1},1)
     for j = i+1:size(C2tot{1},1)
 
-        mDist1 = mDist1 + similarity(C2tot{1}(i,:),C2tot{1,:}(j));
+        mDist1 = mDist1 + similarity(C2tot{1}(i,:),C2tot{1}(j,:));
     end
 end
 mDist1 = mDist1*2/(size(C2tot{1},1)^2-size(C2tot{1},1))

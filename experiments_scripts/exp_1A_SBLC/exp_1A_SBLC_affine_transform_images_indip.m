@@ -78,12 +78,12 @@ for idx_image=1:n_images
             translated_images{idx_image, ix_transl, iy_transl} = imtranslate(images{idx_image}, [xtranslations(ix_transl) ytranslations(iy_transl)], mean2(images{idx_image}), 'linear', 1)
         end
     end
-
+    
     % apply rotations
     for idx_rot=1:n_rotations
         rotated_images{idx_image, idx_rot} = imrotate(images{idx_image}, rotations(idx_rot)*180/pi, 'bilinear' , 'crop');
     end
-
+    
     % apply scales
     for idx_scale=1:n_scales
         scaled_images{idx_image, idx_scale} = imresize(images{idx_image}, size(images{idx_image})*scales(idx_scale));
