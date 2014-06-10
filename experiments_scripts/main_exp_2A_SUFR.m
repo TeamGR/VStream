@@ -5,8 +5,6 @@
 % Transformations:
 %   Independent scaling, translation and rotation of faces on a uniform
 %   background
-%
-%
 
 close all;
 clear all;
@@ -58,8 +56,7 @@ gabors = T.templates;
 T = load('templatesL2.mat');
 
 templatesL2_hist = T.templatesL2_hist;
-templatesL2_moms = T.templatesL2_moms;
-
+%templatesL2_moms = T.templatesL2_moms;
 
 %% Init data structure for responses
 
@@ -105,18 +102,18 @@ for idx_rot=1:n_rotations
     C1rot{idx_rot} = signature;
 end
 
-for ix_transl=1:n_translations
+for idx_transl=1:n_translations
     histograms = poolingL1_giulia(S1transl{idx_transl}, n_splits, n_bins, range,  'histogram');
     signature = histograms(:, :, :, 1);
     signature = signature(:);
-    C1transl{idx_transl} = normalized_signature;
+    C1transl{idx_transl} = signature;
 end
 
 for idx_scale=1:n_scales
     histograms = poolingL1_giulia(S1scale{idx_scale}, n_splits, n_bins, range,  'histogram');
     signature = histograms(:, :, :, 1);
     signature = signature(:);
-    C1scale{idx_scale} = normalized_signature;
+    C1scale{idx_scale} = signature;
 end
 
 %% S2 responses 
@@ -152,7 +149,7 @@ end
 
 %% Output signatures concatenation
 
-C2tot = [];
+%C2tot = zeros(n_translations+n_rotations+n_scales , n_bins * n_templates * n_reg);
 
 for ix_transl=1:n_translations
     C2transl{idx_transl} = C2transl{idx_transl}(:, :, 1);
