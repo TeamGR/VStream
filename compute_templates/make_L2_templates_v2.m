@@ -41,15 +41,16 @@ range = [-1 1];
 
 %% Filter the raw L2 templates with the L1 templates, then pool and concatenate to obtain L2 templates
 
+% Initialize storage data structures
+S1responses = cell(n_templates, n_ori, n_scales);
 templatesL2_hist = cell(n_templates_raw , n_ori_raw , n_scales_raw);
-templatesL2_moms = cell(n_templates_raw , n_ori_raw , n_scales_raw);
+%templatesL2_moms = cell(n_templates_raw , n_ori_raw , n_scales_raw);
 
 % Outer loop on the raw templates
 
 
 
 % Inner loops
-S1responses = cell(n_templates, n_ori, n_scales);
 for idx_scales_raw=1:n_scales_raw            % Scales
 %[inSizeY , inSizeX] = size(squeeze(templatesL2_raw{idx_scales_raw,1}(1,1,:,:)));
     for idx_templates_raw=1:n_templates_raw      % Templates
@@ -67,7 +68,6 @@ end
 
 % Complex layer - Pooling
 
-C1responses_hist = cell(n_templates, n_ori, n_scales);
 for idx_scales_raw=1:n_scales_raw            % Scales
 %S1responses{idx_scale,1} = zeros(n_templates, n_ori, inSizeY - (taps(idx_scale)-1) , inSizeX - (taps(idx_scale)-1));
     for idx_templates_raw=1:n_templates_raw      % Templates
@@ -78,7 +78,7 @@ for idx_scales_raw=1:n_scales_raw            % Scales
             % Concatenate histograms to obtain a 1-D cell array of size n_bins*n_reg*n_templates
             signature = histograms(:, :, :, 1);
             signature = signature(:); 
-            C1responses_hist{idx_templates_raw, idx_ori_raw, idx_scales_raw} = signature;
+            templatesL2_hist{idx_templates_raw, idx_ori_raw, idx_scales_raw} = signature;
         end
     end
 
