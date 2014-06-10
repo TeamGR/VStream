@@ -8,7 +8,8 @@ close all;
 
 % Load cooked L1 templates
 
-T = load('gabor_filters.mat');
+%T = load('gabor_filters.mat');
+T = load('pascal_filters.mat');
 
 n_scales = length(T.templates);
 n_templates = size(T.templates{1},1);
