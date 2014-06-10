@@ -22,9 +22,9 @@ switch policy
             domain_hist = responses(:, :, :, idx_template);
             [out_hist(:, idx_template, 1), out_hist(:, idx_template, 2)] = hist(domain_hist(:), x_hist);
             
-            mean_hist = mean(out_hist(:, idx_template, 1));
-            norm_hist = norm(out_hist(:, idx_template, 1) - mean_hist);
-            out_hist(:, idx_template, 1) = (out_hist(:, idx_template, 1) - mean_hist) / norm_hist;
+            %mean_hist = mean(out_hist(:, idx_template, 1));
+            %norm_hist = norm(out_hist(:, idx_template, 1) - mean_hist);
+            %out_hist(:, idx_template, 1) = (out_hist(:, idx_template, 1) - mean_hist) / norm_hist;
         end
         
         out = out_hist;
