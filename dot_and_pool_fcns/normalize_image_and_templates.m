@@ -11,8 +11,8 @@ end
 sizeX = size(image,2);
 sizeY = size(image,1);
 
-norm_images = cell(idx_scales,1);
-norm_templates = cell(idx_scales,1);
+norm_images = cell(n_scales,1);
+norm_templates = cell(n_scales,1);
 
 reg_w = sizeX/n_splits;
 reg_h = sizeY/n_splits;
@@ -55,9 +55,9 @@ for idx_scale=1:n_scales
     
     reg_number = zeros(4,sizeX*sizeY);
     reg_number(1,:) = (grid_y-1)*n_splits + grid_x;
-    reg_number(2,:) = reg_number_1 + grid_borders_x;
-    reg_number(3,:) = reg_number_1 + grid_borders_y;
-    reg_number(4,:) = reg_number_1 + grid_borders_crosses;
+    reg_number(2,:) = reg_number(1,:) + grid_borders_x;
+    reg_number(3,:) = reg_number(1,:) + grid_borders_y;
+    reg_number(4,:) = reg_number(1,:) + grid_borders_crosses;
     
     n_reg = n_splits^2; % should be equal to the last reg_index
     
@@ -88,7 +88,7 @@ for idx_scale=1:n_scales
     for ix=1:sizeX
         for iy=1:sizeY
             idx_px = (iy-1)*sizeX + ix;
-            its_region = region_number(1,idx_px);
+            its_region = reg_number(1,idx_px);
             norm_images{idx_scale}(iy,ix) = (image(iy,ix) - reg_mean(its_region)) / reg_norm(its_region);
         end
     end
@@ -98,16 +98,15 @@ for idx_scale=1:n_scales
 
     for idx_template=1:n_templates
         for idx_ori=1:n_ori
-            xpad = regW - taps(idx_scale) + thickness;
-            ypad = regH - taps(idx_scale) + thickness;
-            padded_template = [templates{idx_scale}(idx_template, idx_ori, :, :) zeros(taps(idx_scale),xpad); zeros(ypad, taps(idx_scale)+xpad)];
+            xpad = reg_w - taps(idx_scale) + thickness;
+            ypad = reg_h - taps(idx_scale) + thickness;
+            padded_template = [squeeze(templates{idx_scale}(idx_template, idx_ori, :, :)) zeros(taps(idx_scale),xpad); zeros(ypad, taps(idx_scale)+xpad)];
             
-            templ_mean(idx_scale, idx_templ, idx_ori) = mean(padded_template);
-            templ_norm(idx_scale, idx_templ, idx_ori) = norm(padded_template - templ_mean(idx_scale, idx_templ, idx_ori));
-            norm_templates{idx_scale}(idx_template, idx_ori, :, :) = (templates{idx_scale}(idx_template, idx_ori, :, :) - templ_mean(idx_scale, idx_templ, idx_ori)) / templ_norm(idx_scale, idx_templ, idx_ori);
+            templ_mean(idx_scale, idx_template, idx_ori) = mean2(padded_template);
+            templ_norm(idx_scale, idx_template, idx_ori) = norm(padded_template - templ_mean(idx_scale, idx_template, idx_ori));
+            norm_templates{idx_scale}(idx_template, idx_ori, :, :) = (templates{idx_scale}(idx_template, idx_ori, :, :) - templ_mean(idx_scale, idx_template, idx_ori)) / templ_norm(idx_scale, idx_template, idx_ori);
         end
     end
-    
 end
 
 end

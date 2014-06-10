@@ -12,7 +12,7 @@ end
 sizeX = size(image,2);
 sizeY = size(image,1);
 
-[norm_images, norm_templates] = normalize_image_and_templates(image, templates, n_splits, taps);
+[norm_images, norm_templates] = normalize_image_and_templates(image, templates, n_splits);
 
 responses = cell(n_scales, 1);
 for idx_scale=1:n_scales
