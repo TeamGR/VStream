@@ -14,7 +14,7 @@ clear all;
 
 %% Load images and infer parameters
 
-load_prefixname = 'exp_2A_SBLC';
+load_prefixname = 'exp_1A_SBLC';
 
 input = load([load_prefixname '_images.mat'], 'images');
 images = input.images;
@@ -33,15 +33,15 @@ n_scales = size(scaled_images,2);
 
 %% Load templates of layer 1
 
-%T = load('gabor_filters.mat');
-T = load('pascal_filters.mat');
+T = load('gabor_filters.mat');
+%T = load('pascal_filters.mat');
 
 gabors = T.templates;
 
 %% Init data structure for responses
 
 % set parameters for histogram computation at C1 & C2 layers
-n_splits = 1; % the image is divided in a grid of n_splits x n_splits regions
+n_splits = 4; % the image is divided in a grid of n_splits x n_splits regions
 
 %%%% NOTE: the # of bins should be made customizable between layers!
 n_binsL1 = 20; % bars of the histograms at L1
@@ -139,7 +139,7 @@ for idx_image=1:n_images
 end
 
 
-%% Response visualization and quantitative comaprison
+%% Response visualization and quantitative comparison
 
 for idx_image = 1:n_images
     % Create separate images for each class of objects
