@@ -1,4 +1,4 @@
-addpath((genpath('.')));
+%addpath((genpath('.')));
 
 %% Set transformations for input images
 

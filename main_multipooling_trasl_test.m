@@ -1,9 +1,6 @@
 clear all;
 close all;
 
-
-
-
 %% Random patches
 
 %% Parameters

@@ -9,7 +9,7 @@ ytranslations = [-20 -10 10 20];
 
 rotations = pi/3:pi/3:2*pi;
 
-scales = [1 1.5 2];
+scales = [1.5 2];
 
 n_xtranslations = length(xtranslations);
 n_ytranslations = length(ytranslations);
@@ -32,7 +32,7 @@ images_path = 'project\SBLC\images';
 n_images = 2;
 
 % set prefix name for saving transformed images
-save_prefixname = 'exp_2A_SBLC';
+save_prefixname = 'exp_1A_SBLC';
 
 % count lines in registry file and check if there are enough image paths
 if isunix
@@ -86,11 +86,15 @@ for idx_image=1:n_images
     
     % apply scales
     for idx_scale=1:n_scales
-        scaled_images{idx_image, idx_scale} = imresize(images{idx_image}, size(images{idx_image})*scales(idx_scale));
+        %scaled_images{idx_image, idx_scale} = imresize(images{idx_image}, size(images{idx_image})*scales(idx_scale));
+        tmp = imresize( images{idx_image}, size(images{idx_image})*scales(idx_scale));
+
+        % Crop image
+        scaled_images{idx_image, idx_scale} = imcrop(tmp, [ floor((size(tmp,1) - 256 ) /2) floor((size(tmp,2)-256)/2) 255 255 ]);
     end
 end
 
-save(['project2/experiments_scripts/' save_prefixname '_images.mat'], 'images');
-save(['project2/experiments_scripts/' save_prefixname '_translated_images.mat'], 'translated_images');
-save(['project2/experiments_scripts/' save_prefixname '_rotated_images.mat'], 'rotated_images');
-save(['project2/experiments_scripts/' save_prefixname '_scaled_images.mat'], 'scaled_images');
+save(['project2/experiments_scripts/' save_prefixname '/' save_prefixname '_images.mat'], 'images');
+save(['project2/experiments_scripts/' save_prefixname '/' save_prefixname '_translated_images.mat'], 'translated_images');
+save(['project2/experiments_scripts/' save_prefixname '/' save_prefixname '_rotated_images.mat'], 'rotated_images');
+save(['project2/experiments_scripts/' save_prefixname '/' save_prefixname '_scaled_images.mat'], 'scaled_images');

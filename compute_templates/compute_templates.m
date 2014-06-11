@@ -21,7 +21,7 @@ n_filters = n_templates * n_transformations;
 
 registry_path = fullfile(pwd, 'pascal_registry.txt');
 ext = '.jpg';
-images_path = 'D:\IIT\CODICI\pipeline_overfeat\PASCAL2007\VOCdevkit\VOC2007\JPEGImages';
+images_path = 'PASCAL2007\VOCdevkit\VOC2007\JPEGImages';
 
 registry_fid = fopen(registry_path,'r');
 if (registry_fid==-1)

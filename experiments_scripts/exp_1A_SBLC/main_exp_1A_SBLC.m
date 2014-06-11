@@ -1,6 +1,6 @@
 %% Experiment description
 %
-% Number of layers of the net: 2
+% Number of layers of the net: 1
 % Employed dataset: SBLC
 %
 % Transformations:
@@ -33,47 +33,31 @@ n_scales = size(scaled_images,2);
 
 %% Load templates of layer 1
 
-T = load('gabor_filters.mat');
-%T = load('pascal_filters.mat');
+%T = load('gabor_filters.mat');
+T = load('pascal_filters.mat');
 
 gabors = T.templates;
-
-%% Load templates of layer 2
-
-T = load('templatesL2.mat');
-
-templatesL2_hist = T.templatesL2_hist;
-%templatesL2_moms = T.templatesL2_moms;
 
 %% Init data structure for responses
 
 % set parameters for histogram computation at C1 & C2 layers
-n_splits = T.n_splits; % the image is divided in a grid of n_splits x n_splits regions
+n_splits = 1; % the image is divided in a grid of n_splits x n_splits regions
 
 %%%% NOTE: the # of bins should be made customizable between layers!
-n_binsL1 = T.n_bins; % bars of the histograms at L1
-n_binsL2 = T.n_bins; % bars of the histogram at L2
-n_bins = T.n_bins; % bars of the histograms at L1
+n_binsL1 = 20; % bars of the histograms at L1
+n_bins = n_binsL1; % bars of the histograms at L1
 
 range = [-1 1]; % range of the histogram
 
 % init data structures which will contain the output signatures
 S1 = cell(n_images, 1);
 C1 = cell(n_images, 1);
-S2 = cell(n_images, 1);
-C2 = cell(n_images, 1);
 S1transl = cell(n_images, n_xtranslations, n_ytranslations);
 C1transl = cell(n_images, n_xtranslations, n_ytranslations);
-S2transl = cell(n_images, n_xtranslations, n_ytranslations);
-C2transl = cell(n_images, n_xtranslations, n_ytranslations);
 S1rot = cell(n_images, n_rotations);
 C1rot = cell(n_images, n_rotations);
-S2rot = cell(n_images, n_rotations);
-C2rot = cell(n_images, n_rotations);
 S1scale = cell(n_images, n_scales);
 C1scale = cell(n_images, n_scales);
-S2scale = cell(n_images, n_scales);
-C2scale = cell(n_images, n_scales);
 
 %% S1 responses 
 
@@ -110,11 +94,14 @@ end
 % output of poolingL1_giulia is of format
 % zeros(n_binsL1, n_reg, n_templatesL1, 2)
 
+C1tot = cell(n_images, 1);
+
 for idx_image=1:n_images
    histograms = poolingL1_giulia(S1{idx_image}, n_splits, n_binsL1, range,  'histogram');
-   signature = histograms(:, :, :, 1);
+   signature = histograms(:, :, idx_image);
    signature = signature(:);
    C1{idx_image} = signature;
+   C1tot{idx_image} = [ C1tot{idx_image} ; C1{idx_image}' ];
 end
 
 
@@ -122,9 +109,10 @@ for idx_image=1:n_images
     for ix_transl=1:n_xtranslations
         for iy_transl=1:n_ytranslations
             histograms = poolingL1_giulia(S1transl{idx_image, ix_transl, iy_transl}, n_splits, n_binsL1, range,  'histogram');
-            signature = histograms(:, :, :, 1);
+            signature = histograms(:, :, idx_image);
             signature = signature(:); 
             C1transl{idx_image, ix_transl, iy_transl} = signature;
+            C1tot{idx_image} = [ C1tot{idx_image} ; C1transl{idx_image, ix_transl, iy_transl}' ];    
         end
     end
 end
@@ -132,109 +120,36 @@ end
 for idx_image=1:n_images
     for idx_rot=1:n_rotations
         histograms = poolingL1_giulia(S1rot{idx_image, idx_rot}, n_splits, n_binsL1, range,  'histogram');
-        signature = histograms(:, :, :, 1);
+        signature = histograms(:, :, idx_image);
         signature = signature(:); 
         C1rot{idx_image, idx_rot} = signature;
+        C1tot{idx_image} = [ C1tot{idx_image} ; C1rot{idx_image, idx_rot}'  ];
+
     end
 end
 
 for idx_image=1:n_images
     for idx_scale=1:n_scales
         histograms = poolingL1_giulia(S1scale{idx_image, idx_scale}, n_splits, n_binsL1, range,  'histogram');
-        signature = histograms(:, :, :, 1);
+        signature = histograms(:, :, idx_image);
         signature = signature(:); 
         C1scale{idx_image, idx_scale} = signature;
+        C1tot{idx_image} = [ C1tot{idx_image} ; C1scale{idx_image, idx_scale}' ];
     end
 end
 
-%% S2 responses 
-
-% output of dotproductL2_giulia is of format
-% zeros(signature_length, n_oriL2, n_scalesL2, n_templatesL2)
-% signature_length = n_bins * n_reg * n_templatesL1
-
-for idx_image=1:n_images
-   S2{idx_image} = dotproductL2_giulia(C1{idx_image}, templatesL2_hist);
-end
-
-for idx_image=1:n_images
-    for ix_transl=1:n_xtranslations
-        for iy_transl=1:n_ytranslations
-            S2transl{idx_image, ix_transl, iy_transl} = dotproductL2_giulia(C1transl{idx_image, ix_transl, iy_transl}, templatesL2_hist);
-        end
-    end
-end
-
-for idx_image=1:n_images
-    for idx_rot=1:n_rotations
-        S2rot{idx_image, idx_rot} = dotproductL2_giulia(C1rot{idx_image, idx_rot}, templatesL2_hist);
-    end
-end
-
-for idx_image=1:n_images
-    for idx_scale=1:n_scales
-        S2scale{idx_image, idx_scale} = dotproductL2_giulia(C1scale{idx_image, idx_scale}, templatesL2_hist);
-    end
-end
-
-%% C2 responses
-
-% output of poolingL2_giulia is of format
-% zeros(n_bins, n_templatesL2, 2)
-
-C2tot = cell(n_images, 1);
-%signature = cell(n_images, 1);
-for idx_image=1:n_images
-    histograms = poolingL2_giulia(S2{idx_image}, n_binsL2, range,  'histogram');
-    signature = histograms(:, :, idx_image);
-    signature = signature(:); 
-    C2{idx_image} = signature;
-    C2tot{idx_image} = [ C2tot{idx_image} ; C2{idx_image}' ];
-end
-
-for idx_image=1:n_images
-    for ix_transl=1:n_xtranslations
-        for iy_transl=1:n_ytranslations
-            histograms = poolingL2_giulia(S2transl{idx_image, ix_transl, iy_transl}, n_binsL2, range,  'histogram');
-            signature = histograms(:, :, idx_image);
-            signature = signature(:); 
-            C2transl{idx_image, ix_transl, iy_transl} = signature;
-            C2tot{idx_image} = [ C2tot{idx_image} ; C2transl{idx_image, ix_transl, iy_transl}' ];    
-        end
-    end
-end
-
-for idx_image=1:n_images
-    for idx_rot=1:n_rotations
-        histograms = poolingL2_giulia(S2rot{idx_image, idx_rot}, n_binsL2, range,  'histogram');
-        signature = histograms(:, :, idx_image);
-        signature = signature(:); 
-        C2rot{idx_image, idx_rot} = signature;
-        C2tot{idx_image} = [ C2tot{idx_image} ; C2rot{idx_image, idx_rot}'  ];
-    end
-end
-
-for idx_image=1:n_images
-    for idx_scale=1:n_scales
-        histograms = poolingL2_giulia(S2scale{idx_image, idx_scale}, n_binsL2, range,  'histogram');
-        signature = histograms(:, :, idx_image);
-        signature = signature(:); 
-        C2scale{idx_image, idx_scale} = signature;
-        C2tot{idx_image} = [ C2tot{idx_image} ; C2scale{idx_image, idx_scale}' ];
-    end
-end
 
 %% Response visualization and quantitative comaprison
 
 for idx_image = 1:n_images
     % Create separate images for each class of objects
-    figure( 3 + idx_image )
-    m = mean(C2tot{idx_image});
-    sd = std(C2tot{idx_image});
+    figure( idx_image )
+    m = mean(C1tot{idx_image});
+    sd = std(C1tot{idx_image});
     f = [ m+3*sd , flipdim(m-3*sd,2)]; 
-    fill([1:size(C2tot{idx_image},2) , size(C2tot{idx_image},2):-1:1] , f, [7 7 7]/8)
+    fill([1:size(C1tot{idx_image},2) , size(C1tot{idx_image},2):-1:1] , f, [7 7 7]/8)
     hold on;
-    plot(1:size(C2tot{idx_image},2) , m , 'b' , 'LineWidth',1);
+    plot(1:size(C1tot{idx_image},2) , m , 'b' , 'LineWidth',1);
     max(sd)
 end
 
@@ -242,31 +157,30 @@ end
 
 % Class 1
 mDist1 = 0;
-for i = 1:size(C2tot{1},1)
-    for j = i+1:size(C2tot{1},1)
+for i = 1:size(C1tot{1},1)
+    for j = i+1:size(C1tot{1},1)
 
-        mDist1 = mDist1 + similarity(C2tot{1}(i,:),C2tot{1}(j,:));
+        mDist1 = mDist1 + similarity(C1tot{1}(i,:),C1tot{1}(j,:));
     end
 end
-mDist1 = mDist1*2/(size(C2tot{1},1)^2-size(C2tot{1},1))
+mDist1 = mDist1*2/(size(C1tot{1},1)^2-size(C1tot{1},1))
 
 % Class 2
 mDist2 = 0;
-for i = 1:size(C2tot{2},1)
-    for j = i+1:size(C2tot{2},1)
+for i = 1:size(C1tot{2},1)
+    for j = i+1:size(C1tot{2},1)
 
-        mDist2 = mDist2 + similarity(C2tot{2}(i,:),C2tot{2}(j,:));
+        mDist2 = mDist2 + similarity(C1tot{2}(i,:),C1tot{2}(j,:));
     end
 end
-mDist2 = mDist2*2/(size(C2tot{2},1)^2-size(C2tot{2},1))
+mDist2 = mDist2*2/(size(C1tot{2},1)^2-size(C1tot{2},1))
 
 % Compute similarity between signatures of separate classes 
 
 mDistCross = 0;
-for i = 1:size(C2tot{1},1)
-    for j = 1:size(C2tot{2},1)
-
-        mDistCross = mDistCross + similarity(C2tot{1}(i,:),C2tot{2}(j,:));
+for i = 1:size(C1tot{1},1)
+    for j = 1:size(C1tot{2},1)
+        mDistCross = mDistCross + similarity(C1tot{1}(i,:),C1tot{2}(j,:));
     end
 end
-mDistCross = mDistCross/(size(C2tot{1,:},1)*size(C2tot{2,:},1))
+mDistCross = mDistCross/(size(C1tot{1,:},1)*size(C1tot{2,:},1))
