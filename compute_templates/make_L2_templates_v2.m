@@ -1,4 +1,4 @@
-addpath((genpath('.')));
+%addpath((genpath('.')));
 clear all;
 close all;
 
@@ -9,7 +9,7 @@ close all;
 % Load cooked L1 templates
 
 %T = load('gabor_filters.mat');
-T = load('pascal_filters.mat');
+T = load('pascal_filters_5.mat');
 
 n_scales = length(T.templates);
 n_templates = size(T.templates{1},1);
@@ -24,7 +24,7 @@ gabors = T.templates;
 
 % Load raw L2 templates
 
-load('pascal_templates_L2_raw.mat');
+load('pascal_templates_L2_raw_bis.mat');
 
 % Format of templatesL2_raw:
 % n_scales_raw X 1 cell array
@@ -32,13 +32,14 @@ load('pascal_templates_L2_raw.mat');
 %   n_templates X n_ori 2D raw templates matrices
 
 n_scales_raw = length(templatesL2_raw);
-n_templates_raw = size(templatesL2_raw{1},1);
+%n_templates_raw = size(templatesL2_raw{1},1);
+n_templates_raw = 5;
 n_ori_raw = size(templatesL2_raw{1},2);
 
 % Pooling parameters
 n_splits = 2;
-n_bins = 20;
-range = [-1 1];
+n_bins = 1000;
+range = [-0.5 0.5];
 
 %% Filter the raw L2 templates with the L1 templates, then pool and concatenate to obtain L2 templates
 
@@ -48,8 +49,6 @@ templatesL2_hist = cell(n_templates_raw , n_ori_raw , n_scales_raw);
 %templatesL2_moms = cell(n_templates_raw , n_ori_raw , n_scales_raw);
 
 % Outer loop on the raw templates
-
-
 
 % Inner loops
 for idx_scales_raw=1:n_scales_raw            % Scales
@@ -88,5 +87,5 @@ for idx_scales_raw=1:n_scales_raw            % Scales
     idx_scales_raw
 end
 
-
-save ('templatesL2.mat', 'templatesL2_hist' , 'n_splits' , 'n_bins' );
+save ('templatesL2.mat', 'templatesL2_hist' , 'n_splits' , 'n_bins' , 'range' );
+%clear S1*;

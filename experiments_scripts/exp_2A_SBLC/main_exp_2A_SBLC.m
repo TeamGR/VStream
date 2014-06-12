@@ -4,7 +4,7 @@
 % Employed dataset: SBLC
 %
 % Transformations:
-%   Independent scaling, translation and rotation of faces on a uniform
+%   Independent scaling, translation and rotation on a uniform
 %   background
 %
 % Binary classification, 1.jpg (car) vs 4673.jpg (plane)
@@ -34,13 +34,15 @@ n_scales = size(scaled_images,2);
 %% Load templates of layer 1
 
 %T = load('gabor_filters.mat');
-T = load('pascal_filters.mat');
+T = load('pascal_filters_5.mat');
 
 gabors = T.templates;
 
 %% Load templates of layer 2
 
-T = load('templatesL2.mat');
+%T = load('templatesL2.mat');
+%T = load('templatesL2_gabor.mat');
+T = load('templatesL2-5_L1-5_range0.5.mat');
 
 templatesL2_hist = T.templatesL2_hist;
 %templatesL2_moms = T.templatesL2_moms;
@@ -54,8 +56,9 @@ n_splits = T.n_splits; % the image is divided in a grid of n_splits x n_splits r
 n_binsL1 = T.n_bins; % bars of the histograms at L1
 n_binsL2 = T.n_bins; % bars of the histogram at L2
 n_bins = T.n_bins; % bars of the histograms at L1
+range = T.range; % range of the histogram
 
-range = [-1 1]; % range of the histogram
+rangeL2 = [-0.001 0.001];
 
 % init data structures which will contain the output signatures
 S1 = cell(n_images, 1);
@@ -147,6 +150,8 @@ for idx_image=1:n_images
     end
 end
 
+clear S1*
+
 %% S2 responses 
 
 % output of dotproductL2_giulia is of format
@@ -177,58 +182,61 @@ for idx_image=1:n_images
     end
 end
 
+%clear C1*
 %% C2 responses
 
 % output of poolingL2_giulia is of format
 % zeros(n_bins, n_templatesL2, 2)
 
 C2tot = cell(n_images, 1);
-%signature = cell(n_images, 1);
+
 for idx_image=1:n_images
-    histograms = poolingL2_giulia(S2{idx_image}, n_binsL2, range,  'histogram');
-    signature = histograms(:, :, idx_image);
+    histograms = poolingL2_giulia(S2{idx_image}, n_binsL2, rangeL2,  'histogram');
+    signature = histograms(:, :, 1);
     signature = signature(:); 
-    C2{idx_image} = signature;
-    C2tot{idx_image} = [ C2tot{idx_image} ; C2{idx_image}' ];
+    C2{idx_image} = signature';
+    C2tot{idx_image} = [ C2tot{idx_image} ; C2{idx_image} ];
 end
 
 for idx_image=1:n_images
     for ix_transl=1:n_xtranslations
         for iy_transl=1:n_ytranslations
-            histograms = poolingL2_giulia(S2transl{idx_image, ix_transl, iy_transl}, n_binsL2, range,  'histogram');
-            signature = histograms(:, :, idx_image);
+            histograms = poolingL2_giulia(S2transl{idx_image, ix_transl, iy_transl}, n_binsL2, rangeL2,  'histogram');
+            signature = histograms(:, :, 1);
             signature = signature(:); 
-            C2transl{idx_image, ix_transl, iy_transl} = signature;
-            C2tot{idx_image} = [ C2tot{idx_image} ; C2transl{idx_image, ix_transl, iy_transl}' ];    
+            C2transl{idx_image, ix_transl, iy_transl} = signature';
+            C2tot{idx_image} = [ C2tot{idx_image} ; C2transl{idx_image, ix_transl, iy_transl} ];    
         end
     end
 end
 
 for idx_image=1:n_images
     for idx_rot=1:n_rotations
-        histograms = poolingL2_giulia(S2rot{idx_image, idx_rot}, n_binsL2, range,  'histogram');
-        signature = histograms(:, :, idx_image);
+        histograms = poolingL2_giulia(S2rot{idx_image, idx_rot}, n_binsL2, rangeL2,  'histogram');
+        signature = histograms(:, :, 1);
         signature = signature(:); 
-        C2rot{idx_image, idx_rot} = signature;
-        C2tot{idx_image} = [ C2tot{idx_image} ; C2rot{idx_image, idx_rot}'  ];
+        C2rot{idx_image, idx_rot} = signature';
+        C2tot{idx_image} = [ C2tot{idx_image} ; C2rot{idx_image, idx_rot}  ];
     end
 end
 
 for idx_image=1:n_images
     for idx_scale=1:n_scales
-        histograms = poolingL2_giulia(S2scale{idx_image, idx_scale}, n_binsL2, range,  'histogram');
-        signature = histograms(:, :, idx_image);
+        histograms = poolingL2_giulia(S2scale{idx_image, idx_scale}, n_binsL2, rangeL2,  'histogram');
+        signature = histograms(:, :, 1);
         signature = signature(:); 
-        C2scale{idx_image, idx_scale} = signature;
-        C2tot{idx_image} = [ C2tot{idx_image} ; C2scale{idx_image, idx_scale}' ];
+        C2scale{idx_image, idx_scale} = signature';
+        C2tot{idx_image} = [ C2tot{idx_image} ; C2scale{idx_image, idx_scale} ];
     end
 end
+
+clear S2*
 
 %% Response visualization and quantitative comaprison
 
 for idx_image = 1:n_images
     % Create separate images for each class of objects
-    figure( 3 + idx_image )
+    figure( idx_image )
     m = mean(C2tot{idx_image});
     sd = std(C2tot{idx_image});
     f = [ m+3*sd , flipdim(m-3*sd,2)]; 
@@ -241,32 +249,65 @@ end
 % Compute inter-class signature similarity
 
 % Class 1
-mDist1 = 0;
+mSim1 = 0;
 for i = 1:size(C2tot{1},1)
     for j = i+1:size(C2tot{1},1)
 
-        mDist1 = mDist1 + similarity(C2tot{1}(i,:),C2tot{1}(j,:));
+        mSim1 = mSim1 + similarity(C2tot{1}(i,:),C2tot{1}(j,:));
     end
 end
-mDist1 = mDist1*2/(size(C2tot{1},1)^2-size(C2tot{1},1))
+mSim1 = mSim1*2/(size(C2tot{1},1)^2-size(C2tot{1},1))
 
 % Class 2
-mDist2 = 0;
+mSim2 = 0;
 for i = 1:size(C2tot{2},1)
     for j = i+1:size(C2tot{2},1)
 
-        mDist2 = mDist2 + similarity(C2tot{2}(i,:),C2tot{2}(j,:));
+        mSim2 = mSim2 + similarity(C2tot{2}(i,:),C2tot{2}(j,:));
     end
 end
-mDist2 = mDist2*2/(size(C2tot{2},1)^2-size(C2tot{2},1))
+mSim2 = mSim2*2/(size(C2tot{2},1)^2-size(C2tot{2},1))
 
 % Compute similarity between signatures of separate classes 
 
-mDistCross = 0;
+mSimCross = 0;
 for i = 1:size(C2tot{1},1)
     for j = 1:size(C2tot{2},1)
 
-        mDistCross = mDistCross + similarity(C2tot{1}(i,:),C2tot{2}(j,:));
+        mSimCross = mSimCross + similarity(C2tot{1}(i,:),C2tot{2}(j,:));
     end
 end
-mDistCross = mDistCross/(size(C2tot{1,:},1)*size(C2tot{2,:},1))
+mSimCross = mSimCross/(size(C2tot{1,:},1)*size(C2tot{2,:},1))
+
+%% Binary classifier
+
+Y1 = ones(size(C2tot{1},1),1);
+Y2 = -ones(size(C2tot{2},1),1);
+
+% Randomly split the dataset between training and testing
+
+n_train = 10;
+n_test = 40;
+
+% Run classifier some times
+numClassRuns = 200;
+missErr = [];
+for iClass = 1:numClassRuns
+
+    [Xtr1, Ytr1, Xts1, Yts1] = randomSplitDataset(C2tot{1}, Y1, floor(n_train/2), floor(n_test/2));
+    [Xtr2, Ytr2, Xts2, Yts2] = randomSplitDataset(C2tot{2}, Y2, floor(n_train/2), floor(n_test/2));
+
+    Xtr = [Xtr1 ; Xtr2];
+    Ytr = [Ytr1 ; Ytr2];
+    Xts = [Xts1 ; Xts2];
+    Yts = [Yts1 ; Yts2];
+
+    % Apply 1-NN classification
+    k = 1;
+    Ypred = kNNClassify(Xtr, Ytr, k, Xts);
+    ind = find((sign(Ypred) ~= sign(Yts)));
+    %[Yts  Ypred ]
+    missErr = [ missErr (numel(ind)/n_test) ];
+end
+empErrM = mean(missErr)
+empErrV = var(missErr,1)

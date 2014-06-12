@@ -98,8 +98,8 @@ for idx_scale=1:n_scales
 
     for idx_template=1:n_templates
         for idx_ori=1:n_ori
-            xpad = reg_w - taps(idx_scale) + thickness;
-            ypad = reg_h - taps(idx_scale) + thickness;
+            xpad = floor(reg_w) - taps(idx_scale) + thickness;
+            ypad = floor(reg_h) - taps(idx_scale) + thickness;
             padded_template = [squeeze(templates{idx_scale}(idx_template, idx_ori, :, :)) zeros(taps(idx_scale),xpad); zeros(ypad, taps(idx_scale)+xpad)];
             
             templ_mean(idx_scale, idx_template, idx_ori) = mean2(padded_template);
