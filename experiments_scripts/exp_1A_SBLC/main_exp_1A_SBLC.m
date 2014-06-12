@@ -33,8 +33,8 @@ n_scales = size(scaled_images,2);
 
 %% Load templates of layer 1
 
-%T = load('gabor_filters.mat');
-T = load('pascal_filters.mat');
+T = load('gabor_filters.mat');
+%T = load('pascal_filters_1.mat');
 
 gabors = T.templates;
 clear T;
@@ -45,10 +45,10 @@ clear T;
 n_splits = 1; % the image is divided in a grid of n_splits x n_splits regions 
 
 %%%% NOTE: the # of bins should be made customizable between layers!
-n_binsL1 = 200; % bars of the histograms at L1
+n_binsL1 = 500; % bars of the histograms at L1
 n_bins = n_binsL1; % bars of the histograms at L1
 
-range = [-0.3 0.3]; % range of the histogram
+range = [-1 1]; % range of the histogram
 
 % init data structures which will contain the output signatures
 S1 = cell(n_images, 1);
