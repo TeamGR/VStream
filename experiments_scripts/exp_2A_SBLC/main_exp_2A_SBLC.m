@@ -33,8 +33,8 @@ n_scales = size(scaled_images,2);
 
 %% Load templates of layer 1
 
-T = load('gabor_filters.mat');
-%T = load('pascal_filters.mat');
+%T = load('gabor_filters.mat');
+T = load('pascal_filters.mat');
 
 gabors = T.templates;
 

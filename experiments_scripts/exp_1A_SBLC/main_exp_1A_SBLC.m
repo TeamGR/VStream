@@ -9,8 +9,8 @@
 %
 % Binary classification, 1.jpg (car) vs 4673.jpg (plane)
 
-close all;
-clear all;
+% close all;
+% clear all;
 
 %% Load images and infer parameters
 
@@ -33,21 +33,22 @@ n_scales = size(scaled_images,2);
 
 %% Load templates of layer 1
 
-T = load('gabor_filters.mat');
-%T = load('pascal_filters.mat');
+%T = load('gabor_filters.mat');
+T = load('pascal_filters.mat');
 
 gabors = T.templates;
+clear T;
 
 %% Init data structure for responses
 
 % set parameters for histogram computation at C1 & C2 layers
-n_splits = 4; % the image is divided in a grid of n_splits x n_splits regions
+n_splits = 1; % the image is divided in a grid of n_splits x n_splits regions 
 
 %%%% NOTE: the # of bins should be made customizable between layers!
-n_binsL1 = 20; % bars of the histograms at L1
+n_binsL1 = 200; % bars of the histograms at L1
 n_bins = n_binsL1; % bars of the histograms at L1
 
-range = [-1 1]; % range of the histogram
+range = [-0.3 0.3]; % range of the histogram
 
 % init data structures which will contain the output signatures
 S1 = cell(n_images, 1);
@@ -98,10 +99,10 @@ C1tot = cell(n_images, 1);
 
 for idx_image=1:n_images
    histograms = poolingL1_giulia(S1{idx_image}, n_splits, n_binsL1, range,  'histogram');
-   signature = histograms(:, :, idx_image);
+   signature = histograms(:, :, :, 1);
    signature = signature(:);
-   C1{idx_image} = signature;
-   C1tot{idx_image} = [ C1tot{idx_image} ; C1{idx_image}' ];
+   C1{idx_image} = signature';
+   C1tot{idx_image} = [ C1tot{idx_image} ; C1{idx_image} ];
 end
 
 
@@ -109,10 +110,10 @@ for idx_image=1:n_images
     for ix_transl=1:n_xtranslations
         for iy_transl=1:n_ytranslations
             histograms = poolingL1_giulia(S1transl{idx_image, ix_transl, iy_transl}, n_splits, n_binsL1, range,  'histogram');
-            signature = histograms(:, :, idx_image);
+            signature = histograms(:, :, :, 1);
             signature = signature(:); 
-            C1transl{idx_image, ix_transl, iy_transl} = signature;
-            C1tot{idx_image} = [ C1tot{idx_image} ; C1transl{idx_image, ix_transl, iy_transl}' ];    
+            C1transl{idx_image, ix_transl, iy_transl} = signature';
+            C1tot{idx_image} = [ C1tot{idx_image} ; C1transl{idx_image, ix_transl, iy_transl} ];    
         end
     end
 end
@@ -120,10 +121,10 @@ end
 for idx_image=1:n_images
     for idx_rot=1:n_rotations
         histograms = poolingL1_giulia(S1rot{idx_image, idx_rot}, n_splits, n_binsL1, range,  'histogram');
-        signature = histograms(:, :, idx_image);
+        signature = histograms(:, :, :, 1);
         signature = signature(:); 
-        C1rot{idx_image, idx_rot} = signature;
-        C1tot{idx_image} = [ C1tot{idx_image} ; C1rot{idx_image, idx_rot}'  ];
+        C1rot{idx_image, idx_rot} = signature';
+        C1tot{idx_image} = [ C1tot{idx_image} ; C1rot{idx_image, idx_rot} ];
 
     end
 end
@@ -131,13 +132,14 @@ end
 for idx_image=1:n_images
     for idx_scale=1:n_scales
         histograms = poolingL1_giulia(S1scale{idx_image, idx_scale}, n_splits, n_binsL1, range,  'histogram');
-        signature = histograms(:, :, idx_image);
+        signature = histograms(:, :, :, 1);
         signature = signature(:); 
-        C1scale{idx_image, idx_scale} = signature;
-        C1tot{idx_image} = [ C1tot{idx_image} ; C1scale{idx_image, idx_scale}' ];
+        C1scale{idx_image, idx_scale} = signature';
+        C1tot{idx_image} = [ C1tot{idx_image} ; C1scale{idx_image, idx_scale} ];
     end
 end
 
+clear S1*
 
 %% Response visualization and quantitative comparison
 
@@ -184,3 +186,36 @@ for i = 1:size(C1tot{1},1)
     end
 end
 mDistCross = mDistCross/(size(C1tot{1,:},1)*size(C1tot{2,:},1))
+
+%% Binary classifier
+
+Y1 = ones(size(C1tot{1},1),1);
+Y2 = -ones(size(C1tot{2},1),1);
+
+% Randomly split the dataset between training and testing
+
+n_train = 10;
+n_test = 40;
+
+% Run classifier some times
+numClassRuns = 2000;
+missErr = [];
+for iClass = 1:numClassRuns
+
+    [Xtr1, Ytr1, Xts1, Yts1] = randomSplitDataset(C1tot{1}, Y1, floor(n_train/2), floor(n_test/2));
+    [Xtr2, Ytr2, Xts2, Yts2] = randomSplitDataset(C1tot{2}, Y2, floor(n_train/2), floor(n_test/2));
+
+    Xtr = [Xtr1 ; Xtr2];
+    Ytr = [Ytr1 ; Ytr2];
+    Xts = [Xts1 ; Xts2];
+    Yts = [Yts1 ; Yts2];
+
+    % Apply 1-NN classification
+    k = 1;
+    Ypred = kNNClassify(Xtr, Ytr, k, Xts);
+    ind = find((sign(Ypred) ~= sign(Yts)));
+    %[Yts  Ypred ]
+    missErr = [ missErr (numel(ind)/n_test) ];
+end
+empErrM = mean(missErr)
+empErrV = var(missErr,1)
